@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -13,42 +15,25 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.I2C.Port;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class SwerveDrive extends SubsystemBase {
-  private SwerveModule m_frontLeft;
-  private SwerveModule m_frontRight;
-  private SwerveModule m_backLeft;
-  private SwerveModule m_backRight;
+  private final SwerveModule m_frontLeft = new SwerveModule(Constants.Swerve.kFrontLeftOptions);
+  private final SwerveModule m_frontRight = new SwerveModule(Constants.Swerve.kFrontRightOptions);
+  private final SwerveModule m_backLeft = new SwerveModule(Constants.Swerve.kBackLeftOptions);
+  private final SwerveModule m_backRight = new SwerveModule(Constants.Swerve.kBackRightOptions);
   
   private final AHRS m_gyro = new AHRS(Port.kMXP);
 
   private final SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(Constants.Swerve.PhysicalModel.kDriveKinematics, getRobotYawRotation2d(), getSwervePositions());
 
-  public SwerveDrive(
-    SwerveModule frontLeft,
-    SwerveModule frontRight,
-    SwerveModule backLeft,
-    SwerveModule backRight
-  ) {
-    this.m_frontLeft = frontLeft;
-    this.m_frontRight = frontRight;
-    this.m_backLeft = backLeft;
-    this.m_backRight = backRight;
-    resetGyroWithTimeoutThread();
-  }
+  private final Field2d m_field = new Field2d();
 
   public SwerveDrive() {
-    this.m_frontLeft = new SwerveModule(Constants.Swerve.kFrontLeftOptions);
-    this.m_frontRight = new SwerveModule(Constants.Swerve.kFrontRightOptions);
-    this.m_backLeft = new SwerveModule(Constants.Swerve.kBackLeftOptions);
-    this.m_backRight = new SwerveModule(Constants.Swerve.kBackRightOptions);
-    resetGyroWithTimeoutThread();
-  }
-
-  private void resetGyroWithTimeoutThread() {
+    SmartDashboard.putData("Field", m_field);
     new Thread(() -> {
       try {
         Thread.sleep(1000);
@@ -58,6 +43,12 @@ public class SwerveDrive extends SubsystemBase {
       }
     }).start();
   }
+
+  // Module Getters
+  public SwerveModule getFrontLeft() { return m_frontLeft; }
+  public SwerveModule getFrontRight() { return m_frontRight; }
+  public SwerveModule getBackLeft() { return m_backLeft; }
+  public SwerveModule getBackRight() { return m_backRight; }
 
   public void resetGyro() { m_gyro.reset(); }
   public double getRobotYaw() { return Math.IEEEremainder(m_gyro.getAngle(), 360.0); }
@@ -76,12 +67,13 @@ public class SwerveDrive extends SubsystemBase {
   public Pose2d getPose2d() { return m_odometry.getPoseMeters(); }
   public void resetOdometry(Pose2d pose) { m_odometry.resetPosition(getRobotYawRotation2d(), getSwervePositions(), pose); }
 
-  public void setModuleStates(SwerveModuleState[] desiredStates) {
-    SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.PhysicalModel.kMaxSpeedMetersPerSecond);
-    m_frontLeft.setState(desiredStates[0]);
-    m_frontRight.setState(desiredStates[1]);
-    m_backLeft.setState(desiredStates[2]);
-    m_backRight.setState(desiredStates[3]);
+  public void setModuleStates(SwerveModuleState[] states) {
+    SwerveDriveKinematics.desaturateWheelSpeeds(states, Constants.Swerve.PhysicalModel.kMaxSpeedMetersPerSecond);
+    m_frontLeft.setState(states[0]);
+    m_frontRight.setState(states[1]);
+    m_backLeft.setState(states[2]);
+    m_backRight.setState(states[3]);
+    Logger.getInstance().recordOutput("SwerveModuleStates", states);
   }
 
   public void stop() {
@@ -94,6 +86,9 @@ public class SwerveDrive extends SubsystemBase {
   @Override
   public void periodic() {
     m_odometry.update(getRobotYawRotation2d(), getSwervePositions());
+    m_field.setRobotPose(m_odometry.getPoseMeters());
+
+    Logger.getInstance().recordOutput("Odometry", m_odometry.getPoseMeters());
 
     SmartDashboard.putNumber("Robot Angle", getRobotYaw());
     SmartDashboard.putString("Robot Location", getPose2d().getTranslation().toString());

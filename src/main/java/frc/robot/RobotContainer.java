@@ -15,13 +15,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
   private final CommandXboxController m_driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
-  
-  private final SwerveModule m_frontLeft = new SwerveModule(Constants.Swerve.kFrontLeftOptions);
-  private final SwerveModule m_frontRight = new SwerveModule(Constants.Swerve.kFrontRightOptions);
-  private final SwerveModule m_backLeft = new SwerveModule(Constants.Swerve.kBackLeftOptions);
-  private final SwerveModule m_backRight = new SwerveModule(Constants.Swerve.kBackRightOptions);
 
-  private final SwerveDrive m_swerveDrive = new SwerveDrive(m_frontLeft, m_frontRight, m_backLeft, m_backRight);
+  private final SwerveDrive m_swerveDrive = new SwerveDrive();
+  private final SwerveModule m_frontLeft = m_swerveDrive.getFrontLeft();
+  private final SwerveModule m_frontRight = m_swerveDrive.getFrontRight();
+  private final SwerveModule m_backLeft = m_swerveDrive.getBackLeft();
+  private final SwerveModule m_backRight = m_swerveDrive.getBackRight();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {

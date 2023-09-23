@@ -1,0 +1,75 @@
+{
+  "HALProvider": {
+    "Other Devices": {
+      "SPARK MAX [6]": {
+        "header": {
+          "open": true
+        }
+      },
+      "navX-Sensor[0]": {
+        "header": {
+          "open": true
+        }
+      }
+    },
+    "RoboRIO": {
+      "window": {
+        "visible": true
+      }
+    }
+  },
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Back Left turning PID": "PIDController",
+      "/SmartDashboard/Back Right turning PID": "PIDController",
+      "/SmartDashboard/Calibrate Back Left Encoder Magnet": "Command",
+      "/SmartDashboard/Calibrate Front Left Encoder Magnet": "Command",
+      "/SmartDashboard/Calibrate Front Right Encoder Magnet": "Command",
+      "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/Front Left turning PID": "PIDController",
+      "/SmartDashboard/Front Right turning PID": "PIDController"
+    },
+    "windows": {
+      "/SmartDashboard/Calibrate Back Left Encoder Magnet": {
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables": {
+    "Persistent Values": {
+      "open": false
+    },
+    "Retained Values": {
+      "open": false
+    }
+  },
+  "NetworkTables Info": {
+    "AdvantageScope": {
+      "Publishers": {
+        "open": true
+      },
+      "Subscribers": {
+        "open": true
+      },
+      "open": true
+    },
+    "Clients": {
+      "open": true
+    },
+    "Connections": {
+      "open": true
+    },
+    "Server": {
+      "open": true
+    },
+    "shuffleboard": {
+      "open": true
+    }
+  },
+  "NetworkTables View": {
+    "visible": false
+  }
+}
