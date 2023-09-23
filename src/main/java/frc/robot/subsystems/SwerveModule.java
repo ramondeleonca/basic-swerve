@@ -54,22 +54,22 @@ public class SwerveModule extends SubsystemBase {
     this.m_turningMotorEncoder.setVelocityConversionFactor(Constants.Swerve.Module.kTurningEncoder_RPMToRadianPerSecond);
 
     this.m_turningPIDController = new PIDController(Constants.Swerve.Module.TurningPIDParameters.kP, Constants.Swerve.Module.TurningPIDParameters.kI, Constants.Swerve.Module.TurningPIDParameters.kD);
-    this.m_turningPIDController.enableContinuousInput(0, 360);
+    this.m_turningPIDController.enableContinuousInput(Math.toRadians(0), Math.toRadians(360));
 
     this.m_turningEncoder = new CANCoder(options.getTurningEncoderID());
 
     this.m_state = new SwerveModuleState();
 
-    if (this.m_turningEncoder.configMagnetOffset(options.getTurningEncoderOffsetDeg()) != ErrorCode.OK)
-      System.out.println("WARN: " + options.getName() + " turning encoder failed to set magnet offset to " + options.getTurningEncoderOffsetDeg() + " degrees");
+    // if (this.m_turningEncoder.configMagnetOffset(options.getTurningEncoderOffsetDeg()) != ErrorCode.OK)
+    //   System.out.println("WARN: " + options.getName() + " turning encoder failed to set magnet offset to " + options.getTurningEncoderOffsetDeg() + " degrees");
 
     if (this.m_turningEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360) != ErrorCode.OK)
       System.out.println("WARN: " + options.getName() + " turning encoder failed to set absolute sensor range to Unsigned_0_to_360");
 
-    if (this.m_turningEncoder.setPositionToAbsolute() != ErrorCode.OK) 
+    if (this.m_turningEncoder.setPositionToAbsolute() != ErrorCode.OK)
       System.out.println("WARN: " + options.getName() + " turning encoder failed to set position to absolute");
 
-    this.m_initialAngleRad = Math.toRadians(this.m_turningEncoder.getAbsolutePosition()) + options.getTurningEncoderOffsetRad();
+    this.m_initialAngleRad = Math.toRadians(this.m_turningEncoder.getAbsolutePosition());
 
     resetMotorEncoders();
   }
@@ -83,6 +83,24 @@ public class SwerveModule extends SubsystemBase {
   public void stop() {
     this.m_driveMotor.set(0);
     this.m_turningMotor.set(0);
+  }
+
+  public void calibrateMagnetOffset() {
+    new Thread(() -> {
+      try {
+        if (this.m_turningEncoder.configMagnetOffset(0) != ErrorCode.OK) throw new Exception("Failed to resetset " + m_options.getName() + " encoder offset to 0");
+        System.out.println("WARN: DO NOT TURN " + m_options.getName() + " WHEEL / TURNING MOTOR");
+        Thread.sleep(100);
+        if (this.m_turningEncoder.setPositionToAbsolute() != ErrorCode.OK) throw new Exception("Failed to set " + m_options.getName() + " encoder position to absolute");
+        double offset = this.m_turningEncoder.getAbsolutePosition() * -1;
+        if (this.m_turningEncoder.configMagnetOffset(offset) != ErrorCode.OK) throw new Exception("Failed to set " + m_options.getName() + " encoder offset to " + offset + " degrees");
+        this.m_initialAngleRad = 0;
+        System.out.println("INFO: " + m_options.getName() + " encoder offset set to " + offset + " degrees");
+      } catch (Exception err) {
+        System.out.println("ERROR: " + m_options.getName() + " turning encoder failed to calibrate magnet offset \n" + err.getMessage() + "\n" + err.getStackTrace());
+      }
+    }).run();
+    
   }
 
   // Turning position encoder

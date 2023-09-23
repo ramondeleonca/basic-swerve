@@ -18,16 +18,37 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class SwerveDrive extends SubsystemBase {
-  private final SwerveModule m_frontLeft = new SwerveModule(Constants.Swerve.kFrontLeftOptions);
-  private final SwerveModule m_frontRight = new SwerveModule(Constants.Swerve.kFrontRightOptions);
-  private final SwerveModule m_backLeft = new SwerveModule(Constants.Swerve.kBackLeftOptions);
-  private final SwerveModule m_backRight = new SwerveModule(Constants.Swerve.kBackRightOptions);
+  private SwerveModule m_frontLeft;
+  private SwerveModule m_frontRight;
+  private SwerveModule m_backLeft;
+  private SwerveModule m_backRight;
   
   private final AHRS m_gyro = new AHRS(Port.kMXP);
 
   private final SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(Constants.Swerve.PhysicalModel.kDriveKinematics, getRobotYawRotation2d(), getSwervePositions());
 
+  public SwerveDrive(
+    SwerveModule frontLeft,
+    SwerveModule frontRight,
+    SwerveModule backLeft,
+    SwerveModule backRight
+  ) {
+    this.m_frontLeft = frontLeft;
+    this.m_frontRight = frontRight;
+    this.m_backLeft = backLeft;
+    this.m_backRight = backRight;
+    resetGyroWithTimeoutThread();
+  }
+
   public SwerveDrive() {
+    this.m_frontLeft = new SwerveModule(Constants.Swerve.kFrontLeftOptions);
+    this.m_frontRight = new SwerveModule(Constants.Swerve.kFrontRightOptions);
+    this.m_backLeft = new SwerveModule(Constants.Swerve.kBackLeftOptions);
+    this.m_backRight = new SwerveModule(Constants.Swerve.kBackRightOptions);
+    resetGyroWithTimeoutThread();
+  }
+
+  private void resetGyroWithTimeoutThread() {
     new Thread(() -> {
       try {
         Thread.sleep(1000);
